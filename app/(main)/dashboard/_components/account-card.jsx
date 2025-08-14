@@ -56,7 +56,7 @@ const AccountCard = ({ account }) => {
                     <Switch
                         checked={isDefault}
                         onClick={handleDefaultChange}
-                        disabled={updateDefaultAccount}
+                        disabled={updateDefaultLoading}
                     />
                 </CardHeader>
                 <CardContent>
