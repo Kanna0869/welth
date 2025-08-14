@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button } from "@/components/ui/button"
 import {
     Drawer,
@@ -23,6 +23,10 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { accountSchema } from '@/app/lib/schema'
 import { Input } from './ui/input'
+import useFetch from '@/hooks/use-fetch'
+import { createAccount } from '@/actions/dashboard'
+import { Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 
 const CreateAccountDrawer = ({ children }) => {
@@ -45,8 +49,30 @@ const CreateAccountDrawer = ({ children }) => {
         },
     })
 
+    const {
+        data: newAccount,
+        loading: createAccountLoading,
+        fn: createAccountFn,
+        error,
+    } = useFetch(createAccount)
+
+    useEffect(() => {
+        if (!createAccountLoading && newAccount) {
+            toast.success("Account created successfully!")
+            reset()
+            setOpen(false)
+        }
+    }, [createAccountLoading, newAccount])
+
+    useEffect(() => {
+        if (error) {
+            toast.error(error.message || "Failed to create account")
+        }
+    }, [error])
+
     const onSubmit = async (data) => {
-        console.log(data);
+        // console.log(data);
+        await createAccountFn(data);
     }
 
     return (
@@ -82,9 +108,9 @@ const CreateAccountDrawer = ({ children }) => {
                             <Select
                                 onValueChange={(value) => setValue("type", value)}
                                 defaultValue={watch("type")}
-                                className="w-full"
+                            // className="w-full"
                             >
-                                <SelectTrigger id="type">
+                                <SelectTrigger id="type" className="w-full">
                                     <SelectValue placeholder="Select type" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -136,8 +162,16 @@ const CreateAccountDrawer = ({ children }) => {
                                     Cancel
                                 </Button>
                             </DrawerClose>
-                            <Button type="submit" className="flex-1">
-                                Create Account
+                            <Button
+                                type="submit"
+                                className="flex-1"
+                                disabled={createAccountLoading}
+                            >
+                                {
+                                    createAccountLoading ?
+                                        <Loader2 className='mr-2 h-4 w-4 animate-spin'>Creating...</Loader2> :
+                                        "Create Account"
+                                }
                             </Button>
                         </div>
                     </form>
